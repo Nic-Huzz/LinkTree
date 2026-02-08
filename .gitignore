@@ -1,0 +1,8 @@
+# Reference screenshots (not needed in production)
+Backend Portal.png
+Public-facin.png
+Public-Facing 2.png
+
+# OS files
+.DS_Store
+Thumbs.db

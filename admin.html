@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinkTree Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #f5f5f7;
+      --surface: #ffffff;
+      --text: #1a1a1a;
+      --text-secondary: #6b7280;
+      --border: #e5e7eb;
+      --primary: #6c3bf5;
+      --primary-light: #ede9fe;
+      --danger: #ef4444;
+      --danger-light: #fef2f2;
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+      --shadow-lg: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Layout */
+    .app {
+      display: grid;
+      grid-template-columns: 1fr 375px;
+      min-height: 100vh;
+    }
+
+    @media (max-width: 900px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+      .preview-panel {
+        display: none;
+      }
+      .preview-toggle {
+        display: flex !important;
+      }
+    }
+
+    /* Header */
+    .header {
+      grid-column: 1 / -1;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header h1 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn:hover { background: var(--bg); }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .btn-primary:hover { background: #5b2de0; }
+
+    .btn-danger {
+      color: var(--danger);
+      border-color: var(--danger);
+    }
+
+    .btn-danger:hover { background: var(--danger-light); }
+
+    .btn-sm {
+      padding: 5px 10px;
+      font-size: 12px;
+    }
+
+    .preview-toggle {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 200;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      box-shadow: var(--shadow-lg);
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    /* Editor Panel */
+    .editor-panel {
+      padding: 24px;
+      overflow-y: auto;
+      max-height: calc(100vh - 56px);
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 4px;
+      border: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+
+    .tab:hover { color: var(--text); background: var(--bg); }
+    .tab.active { background: var(--primary); color: white; }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--text);
+    }
+
+    /* Form Elements */
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .field:last-child { margin-bottom: 0; }
+
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .field input[type="text"],
+    .field input[type="url"],
+    .field textarea,
+    .field select {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--text);
+      transition: border-color 0.15s;
+      background: var(--surface);
+    }
+
+    .field input:focus,
+    .field textarea:focus,
+    .field select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    .field textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .color-field {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .color-field input[type="color"] {
+      width: 40px;
+      height: 34px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2px;
+      cursor: pointer;
+      background: var(--surface);
+    }
+
+    .color-field input[type="text"] {
+      flex: 1;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px;
+    }
+
+    /* Toggle Switch */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+    }
+
+    .toggle-label {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      cursor: pointer;
+    }
+
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-track {
+      position: absolute;
+      inset: 0;
+      background: #d1d5db;
+      border-radius: 12px;
+      transition: background 0.2s;
+    }
+
+    .toggle input:checked + .toggle-track {
+      background: var(--primary);
+    }
+
+    .toggle-thumb {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    }
+
+    .toggle input:checked ~ .toggle-thumb {
+      transform: translateX(20px);
+    }
+
+    /* Link Items */
+    .link-item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 10px;
+      background: var(--surface);
+      transition: box-shadow 0.15s;
+    }
+
+    .link-item:hover {
+      box-shadow: var(--shadow);
+    }
+
+    .link-item-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .link-item-drag {
+      cursor: grab;
+      color: var(--text-secondary);
+      font-size: 16px;
+      padding: 2px;
+      user-select: none;
+    }
+
+    .link-item-title-preview {
+      flex: 1;
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .link-item-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    .link-item-body {
+      display: none;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    .link-item.expanded .link-item-body {
+      display: block;
+    }
+
+    .section-block {
+      margin-bottom: 20px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: var(--primary-light);
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    .section-header input {
+      border: none;
+      background: transparent;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--primary);
+      outline: none;
+      flex: 1;
+      font-family: inherit;
+    }
+
+    .section-header input::placeholder {
+      color: #a78bfa;
+    }
+
+    /* Preview Panel */
+    .preview-panel {
+      background: #1a1a2e;
+      border-left: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 24px 16px;
+      overflow-y: auto;
+      max-height: calc(100vh - 56px);
+      position: sticky;
+      top: 56px;
+    }
+
+    .phone-frame {
+      width: 340px;
+      max-width: 90vw;
+      min-height: 680px;
+      background: #111;
+      border-radius: 40px;
+      padding: 12px;
+      box-shadow: 0 0 0 2px #333, 0 20px 60px rgba(0,0,0,0.4);
+      position: relative;
+    }
+
+    .phone-notch {
+      width: 120px;
+      height: 28px;
+      background: #111;
+      border-radius: 0 0 16px 16px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+      margin-top: -2px;
+    }
+
+    .phone-screen {
+      border-radius: 30px;
+      overflow: hidden;
+      background: #fff;
+      height: 640px;
+    }
+
+    .phone-screen iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      transform-origin: top left;
+    }
+
+    /* Preview Modal (mobile) */
+    .preview-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 300;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .preview-modal.open {
+      display: flex;
+    }
+
+    .preview-modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: white;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1a1a1a;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 400;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 32px 16px;
+      color: var(--text-secondary);
+    }
+
+    .empty-state p {
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+
+    /* Tab content */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Analytics Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .stat {
+      text-align: center;
+      padding: 16px 8px;
+      background: var(--bg);
+      border-radius: 10px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* Chart */
+    .chart-container {
+      position: relative;
+      width: 100%;
+      height: 200px;
+    }
+
+    .chart-container canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    .chart-legend {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .chart-legend span {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    /* Top Links */
+    .top-link-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .top-link-row:last-child {
+      border-bottom: none;
+    }
+
+    .top-link-name {
+      font-size: 14px;
+      font-weight: 500;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-right: 12px;
+    }
+
+    .top-link-count {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary);
+      white-space: nowrap;
+    }
+
+    .analytics-period {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 16px;
+    }
+
+    .period-btn {
+      padding: 5px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .period-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    /* QR Code */
+    .qr-preview {
+      text-align: center;
+      padding: 24px;
+      background: var(--bg);
+      border-radius: 12px;
+      margin: 16px 0;
+    }
+
+    .qr-preview canvas {
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .qr-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .qr-actions .btn {
+      flex: 1;
+    }
+
+    .analytics-empty {
+      text-align: center;
+      padding: 40px 16px;
+      color: var(--text-secondary);
+    }
+
+    .analytics-empty p {
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .clear-data-row {
+      margin-top: 16px;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <h1>LinkTree Admin</h1>
+      <div class="header-actions">
+        <button class="btn" onclick="importConfig()">Import</button>
+        <button class="btn btn-primary" onclick="exportConfig()">Export config.js</button>
+      </div>
+    </header>
+
+    <div class="editor-panel">
+      <div class="tabs">
+        <button class="tab active" data-tab="profile">Profile</button>
+        <button class="tab" data-tab="links">Links</button>
+        <button class="tab" data-tab="social">Social</button>
+        <button class="tab" data-tab="theme">Theme</button>
+        <button class="tab" data-tab="seo">SEO</button>
+        <button class="tab" data-tab="analytics">Analytics</button>
+        <button class="tab" data-tab="share">Share</button>
+      </div>
+
+      <!-- Profile Tab -->
+      <div class="tab-content active" id="tab-profile">
+        <div class="card">
+          <div class="card-title">Profile</div>
+          <div class="field">
+            <label>Name</label>
+            <input type="text" id="profileName" oninput="updateField('profile.name', this.value)">
+          </div>
+          <div class="field">
+            <label>Bio</label>
+            <textarea id="profileBio" rows="2" oninput="updateField('profile.bio', this.value)"></textarea>
+          </div>
+          <div class="field">
+            <label>Photo URL or Path</label>
+            <input type="text" id="profilePhoto" oninput="updateField('profile.photo', this.value)" placeholder="assets/profile.jpg or https://...">
+          </div>
+          <div class="field">
+            <label>Photo Style</label>
+            <select id="profilePhotoStyle" onchange="updateField('profile.photoStyle', this.value)">
+              <option value="hero">Hero (large, blended)</option>
+              <option value="avatar">Avatar (circular crop)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Links Tab -->
+      <div class="tab-content" id="tab-links">
+        <div id="sectionsContainer"></div>
+        <button class="btn btn-primary" onclick="addSection()" style="width:100%">+ Add Section</button>
+      </div>
+
+      <!-- Social Tab -->
+      <div class="tab-content" id="tab-social">
+        <div class="card">
+          <div class="card-title">Social Links</div>
+          <div id="socialContainer"></div>
+          <button class="btn btn-sm" onclick="addSocial()" style="margin-top:12px">+ Add Social Link</button>
+        </div>
+      </div>
+
+      <!-- Theme Tab -->
+      <div class="tab-content" id="tab-theme">
+        <div class="card">
+          <div class="card-title">Background</div>
+          <div class="field">
+            <label>Type</label>
+            <select id="bgType" onchange="updateBgType(this.value)">
+              <option value="gradient">Gradient</option>
+              <option value="solid">Solid Color</option>
+            </select>
+          </div>
+          <div class="toggle-row">
+            <span class="toggle-label">Animate Background</span>
+            <label class="toggle">
+              <input type="checkbox" id="bgAnimated" onchange="updateField('theme.background.animated', this.checked)">
+              <span class="toggle-track"></span>
+              <span class="toggle-thumb"></span>
+            </label>
+          </div>
+          <div id="gradientColors"></div>
+          <div class="field" id="bgAngleField">
+            <label>Gradient Angle</label>
+            <input type="text" id="bgAngle" oninput="updateField('theme.background.angle', parseInt(this.value) || 180)" placeholder="180">
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Colors</div>
+          <div class="field">
+            <label>Accent / Headings</label>
+            <div class="color-field">
+              <input type="color" id="themeAccent" oninput="syncColor('accent', this.value)">
+              <input type="text" id="themeAccentText" oninput="syncColorText('accent', this.value)">
+            </div>
+          </div>
+          <div class="field">
+            <label>Name Color</label>
+            <div class="color-field">
+              <input type="color" id="themeNameColor" oninput="syncColor('nameColor', this.value)">
+              <input type="text" id="themeNameColorText" oninput="syncColorText('nameColor', this.value)">
+            </div>
+          </div>
+          <div class="field">
+            <label>Bio Color</label>
+            <div class="color-field">
+              <input type="color" id="themeBioColor" oninput="syncColor('bioColor', this.value)">
+              <input type="text" id="themeBioColorText" oninput="syncColorText('bioColor', this.value)">
+            </div>
+          </div>
+          <div class="field">
+            <label>Card Background</label>
+            <div class="color-field">
+              <input type="color" id="themeCardBg" oninput="syncColor('cardBackground', this.value)">
+              <input type="text" id="themeCardBgText" oninput="syncColorText('cardBackground', this.value)">
+            </div>
+          </div>
+          <div class="field">
+            <label>Card Text</label>
+            <div class="color-field">
+              <input type="color" id="themeCardText" oninput="syncColor('cardText', this.value)">
+              <input type="text" id="themeCardTextText" oninput="syncColorText('cardText', this.value)">
+            </div>
+          </div>
+          <div class="field">
+            <label>Social Icon Color</label>
+            <div class="color-field">
+              <input type="color" id="themeSocialColor" oninput="syncColor('socialIconColor', this.value)">
+              <input type="text" id="themeSocialColorText" oninput="syncColorText('socialIconColor', this.value)">
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Style</div>
+          <div class="field">
+            <label>Card Border Radius</label>
+            <input type="text" id="themeCardRadius" oninput="updateField('theme.cardBorderRadius', this.value)" placeholder="12px">
+          </div>
+          <div class="field">
+            <label>Card Hover Scale</label>
+            <input type="text" id="themeCardScale" oninput="updateField('theme.cardHoverScale', this.value)" placeholder="1.03">
+          </div>
+          <div class="field">
+            <label>Font Family</label>
+            <input type="text" id="themeFont" oninput="updateField('theme.font', this.value)" placeholder="'Inter', sans-serif">
+          </div>
+        </div>
+      </div>
+
+      <!-- SEO Tab -->
+      <div class="tab-content" id="tab-seo">
+        <div class="card">
+          <div class="card-title">Search Engine Optimization</div>
+          <div class="field">
+            <label>Page Title</label>
+            <input type="text" id="seoTitle" oninput="updateField('seo.title', this.value)">
+          </div>
+          <div class="field">
+            <label>Description</label>
+            <textarea id="seoDesc" rows="2" oninput="updateField('seo.description', this.value)"></textarea>
+          </div>
+          <div class="field">
+            <label>OG Image URL</label>
+            <input type="text" id="seoOgImage" oninput="updateField('seo.ogImage', this.value)">
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Footer</div>
+          <div class="toggle-row">
+            <span class="toggle-label">Show Footer</span>
+            <label class="toggle">
+              <input type="checkbox" id="footerShow" onchange="updateField('footer.show', this.checked)">
+              <span class="toggle-track"></span>
+              <span class="toggle-thumb"></span>
+            </label>
+          </div>
+          <div class="field" style="margin-top:12px">
+            <label>Footer Text</label>
+            <input type="text" id="footerText" oninput="updateField('footer.text', this.value)">
+          </div>
+        </div>
+      </div>
+
+      <!-- Analytics Tab -->
+      <div class="tab-content" id="tab-analytics">
+        <div class="card">
+          <div class="card-title">Lifetime Totals</div>
+          <div class="stats-grid">
+            <div class="stat">
+              <div class="stat-value" id="statViews">0</div>
+              <div class="stat-label">Views</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" id="statClicks">0</div>
+              <div class="stat-label">Clicks</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" id="statCTR">0%</div>
+              <div class="stat-label">Click Rate</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <div class="card-title" style="margin-bottom:0">Activity</div>
+            <div class="analytics-period">
+              <button class="period-btn active" data-days="7" onclick="setAnalyticsPeriod(7, this)">7 days</button>
+              <button class="period-btn" data-days="14" onclick="setAnalyticsPeriod(14, this)">14 days</button>
+              <button class="period-btn" data-days="30" onclick="setAnalyticsPeriod(30, this)">30 days</button>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="activityChart"></canvas>
+          </div>
+          <div class="chart-legend">
+            <span><span class="legend-dot" style="background:#6c3bf5"></span> Views</span>
+            <span><span class="legend-dot" style="background:#FFD700"></span> Clicks</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Clicks Per Link</div>
+          <div id="topLinks">
+            <div class="analytics-empty">
+              <p>No click data yet.</p>
+              <p style="font-size:12px">Clicks on your public page will appear here.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="clear-data-row">
+          <button class="btn btn-sm btn-danger" onclick="clearAnalytics()">Clear Analytics Data</button>
+        </div>
+      </div>
+
+      <!-- Share / QR Code Tab -->
+      <div class="tab-content" id="tab-share">
+        <div class="card">
+          <div class="card-title">QR Code</div>
+          <div class="field">
+            <label>Your Page URL</label>
+            <input type="url" id="qrUrl" placeholder="https://your-site.com" oninput="generateQR()">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="field">
+              <label>Size</label>
+              <select id="qrSize" onchange="generateQR()">
+                <option value="200">Small (200px)</option>
+                <option value="300" selected>Medium (300px)</option>
+                <option value="400">Large (400px)</option>
+                <option value="600">XL (600px)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Margin</label>
+              <select id="qrMargin" onchange="generateQR()">
+                <option value="1">Tight</option>
+                <option value="2" selected>Normal</option>
+                <option value="4">Wide</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Foreground Color</label>
+            <div class="color-field">
+              <input type="color" id="qrFg" value="#000000" oninput="document.getElementById('qrFgText').value=this.value;generateQR()">
+              <input type="text" id="qrFgText" value="#000000" oninput="document.getElementById('qrFg').value=this.value;generateQR()">
+            </div>
+          </div>
+          <div class="field">
+            <label>Background Color</label>
+            <div class="color-field">
+              <input type="color" id="qrBg" value="#ffffff" oninput="document.getElementById('qrBgText').value=this.value;generateQR()">
+              <input type="text" id="qrBgText" value="#ffffff" oninput="document.getElementById('qrBg').value=this.value;generateQR()">
+            </div>
+          </div>
+          <div class="qr-preview" id="qrPreview">
+            <p style="color:var(--text-secondary);font-size:14px">Enter your URL above to generate a QR code</p>
+          </div>
+          <div class="qr-actions">
+            <button class="btn btn-primary" onclick="downloadQR()">Download PNG</button>
+            <button class="btn" onclick="copyQR()">Copy to Clipboard</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Preview Panel (desktop) -->
+    <div class="preview-panel">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <iframe id="previewFrame" src="index.html"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preview Toggle (mobile) -->
+  <button class="preview-toggle" onclick="togglePreviewModal()">&#128065;</button>
+
+  <!-- Preview Modal (mobile) -->
+  <div class="preview-modal" id="previewModal">
+    <button class="preview-modal-close" onclick="togglePreviewModal()">&times;</button>
+    <div class="phone-frame">
+      <div class="phone-notch"></div>
+      <div class="phone-screen">
+        <iframe id="previewFrameMobile" src="index.html"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Hidden file input -->
+  <input type="file" id="importInput" accept=".js,.json" style="display:none" onchange="handleImport(event)">
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+  <script src="config.js"></script>
+  <script>
+    // Deep clone the config for editing
+    let config = JSON.parse(JSON.stringify(SITE_CONFIG));
+
+    // Load draft from localStorage if available
+    const draft = localStorage.getItem('linktree_draft');
+    if (draft) {
+      try {
+        config = JSON.parse(draft);
+      } catch (e) {}
+    }
+
+    // --- Tabs ---
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+      });
+    });
+
+    // --- State Management ---
+    function setNested(obj, path, value) {
+      const keys = path.split('.');
+      let current = obj;
+      for (let i = 0; i < keys.length - 1; i++) {
+        if (!current[keys[i]]) current[keys[i]] = {};
+        current = current[keys[i]];
+      }
+      current[keys[keys.length - 1]] = value;
+    }
+
+    function getNested(obj, path) {
+      return path.split('.').reduce((o, k) => (o || {})[k], obj);
+    }
+
+    function updateField(path, value) {
+      setNested(config, path, value);
+      saveAndPreview();
+    }
+
+    function saveAndPreview() {
+      localStorage.setItem('linktree_draft', JSON.stringify(config));
+      sendPreview();
+    }
+
+    function sendPreview() {
+      const msg = { type: 'linktree-preview', config };
+      const frame = document.getElementById('previewFrame');
+      if (frame && frame.contentWindow) {
+        frame.contentWindow.postMessage(msg, '*');
+      }
+      const frameMobile = document.getElementById('previewFrameMobile');
+      if (frameMobile && frameMobile.contentWindow) {
+        frameMobile.contentWindow.postMessage(msg, '*');
+      }
+    }
+
+    // --- Color Sync ---
+    function syncColor(field, value) {
+      document.getElementById('theme' + capitalize(field) + 'Text').value = value;
+      updateField('theme.' + field, value);
+    }
+
+    function syncColorText(field, value) {
+      if (/^#[0-9a-f]{6}$/i.test(value)) {
+        document.getElementById('theme' + capitalize(field)).value = value;
+      }
+      updateField('theme.' + field, value);
+    }
+
+    function capitalize(s) {
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
+    // --- Render Functions ---
+    function populateForm() {
+      // Profile
+      document.getElementById('profileName').value = config.profile?.name || '';
+      document.getElementById('profileBio').value = config.profile?.bio || '';
+      document.getElementById('profilePhoto').value = config.profile?.photo || '';
+      document.getElementById('profilePhotoStyle').value = config.profile?.photoStyle || 'hero';
+
+      // Theme colors
+      const colorFields = ['accent', 'nameColor', 'bioColor', 'cardBackground', 'cardText', 'socialIconColor'];
+      colorFields.forEach(f => {
+        const val = config.theme?.[f] || '#000000';
+        const colorEl = document.getElementById('theme' + capitalize(f));
+        const textEl = document.getElementById('theme' + capitalize(f) + 'Text');
+        if (colorEl) colorEl.value = val.startsWith('#') && val.length === 7 ? val : '#000000';
+        if (textEl) textEl.value = val;
+      });
+
+      // Background
+      document.getElementById('bgType').value = config.theme?.background?.type || 'gradient';
+      document.getElementById('bgAnimated').checked = config.theme?.background?.animated !== false;
+      document.getElementById('bgAngle').value = config.theme?.background?.angle || 180;
+      renderGradientColors();
+
+      // Style
+      document.getElementById('themeCardRadius').value = config.theme?.cardBorderRadius || '12px';
+      document.getElementById('themeCardScale').value = config.theme?.cardHoverScale || '1.03';
+      document.getElementById('themeFont').value = config.theme?.font || '';
+
+      // SEO
+      document.getElementById('seoTitle').value = config.seo?.title || '';
+      document.getElementById('seoDesc').value = config.seo?.description || '';
+      document.getElementById('seoOgImage').value = config.seo?.ogImage || '';
+
+      // Footer
+      document.getElementById('footerShow').checked = config.footer?.show || false;
+      document.getElementById('footerText').value = config.footer?.text || '';
+
+      // Sections & Links
+      renderSections();
+
+      // Social
+      renderSocial();
+    }
+
+    function renderGradientColors() {
+      const container = document.getElementById('gradientColors');
+      const colors = config.theme?.background?.colors || ['#6c3bf5'];
+      container.innerHTML = colors.map((c, i) => `
+        <div class="field">
+          <label>Color ${i + 1}</label>
+          <div class="color-field">
+            <input type="color" value="${c}" oninput="updateGradientColor(${i}, this.value)">
+            <input type="text" value="${c}" oninput="updateGradientColorText(${i}, this.value)">
+            ${colors.length > 1 ? `<button class="btn btn-sm btn-danger" onclick="removeGradientColor(${i})">&times;</button>` : ''}
+          </div>
+        </div>
+      `).join('') + '<button class="btn btn-sm" onclick="addGradientColor()" style="margin-top:4px">+ Add Color Stop</button>';
+    }
+
+    function updateGradientColor(index, value) {
+      config.theme.background.colors[index] = value;
+      renderGradientColors();
+      saveAndPreview();
+    }
+
+    function updateGradientColorText(index, value) {
+      config.theme.background.colors[index] = value;
+      saveAndPreview();
+    }
+
+    function addGradientColor() {
+      config.theme.background.colors.push('#000000');
+      renderGradientColors();
+      saveAndPreview();
+    }
+
+    function removeGradientColor(index) {
+      config.theme.background.colors.splice(index, 1);
+      renderGradientColors();
+      saveAndPreview();
+    }
+
+    function updateBgType(type) {
+      config.theme.background.type = type;
+      document.getElementById('bgAngleField').style.display = type === 'gradient' ? 'block' : 'none';
+      saveAndPreview();
+    }
+
+    // --- Sections & Links ---
+    function renderSections() {
+      const container = document.getElementById('sectionsContainer');
+      if (!config.sections || config.sections.length === 0) {
+        container.innerHTML = '<div class="empty-state"><p>No sections yet.</p></div>';
+        return;
+      }
+
+      container.innerHTML = config.sections.map((section, si) => `
+        <div class="section-block" data-section="${si}">
+          <div class="section-header">
+            <input type="text" value="${section.title || ''}"
+                   placeholder="Section title (optional)"
+                   oninput="updateSectionTitle(${si}, this.value)">
+            <div style="display:flex;gap:4px">
+              ${si > 0 ? `<button class="btn btn-sm" onclick="moveSectionUp(${si})">&#8593;</button>` : ''}
+              ${si < config.sections.length - 1 ? `<button class="btn btn-sm" onclick="moveSectionDown(${si})">&#8595;</button>` : ''}
+              <button class="btn btn-sm btn-danger" onclick="removeSection(${si})">&times;</button>
+            </div>
+          </div>
+          <div class="section-links">
+            ${(section.links || []).map((link, li) => renderLinkItem(si, li, link)).join('')}
+          </div>
+          <button class="btn btn-sm" onclick="addLink(${si})" style="width:100%;margin-top:4px">+ Add Link</button>
+        </div>
+      `).join('');
+    }
+
+    function renderLinkItem(si, li, link) {
+      return `
+        <div class="link-item" id="link-${si}-${li}">
+          <div class="link-item-header">
+            <span class="link-item-drag">&#9776;</span>
+            <span class="link-item-title-preview">${link.title || 'Untitled'}</span>
+            <div class="link-item-actions">
+              <label class="toggle" style="margin:0">
+                <input type="checkbox" ${link.enabled ? 'checked' : ''} onchange="toggleLink(${si}, ${li}, this.checked)">
+                <span class="toggle-track"></span>
+                <span class="toggle-thumb"></span>
+              </label>
+              <button class="btn btn-sm" onclick="toggleExpand('link-${si}-${li}')">&#9998;</button>
+              ${li > 0 ? `<button class="btn btn-sm" onclick="moveLinkUp(${si}, ${li})">&#8593;</button>` : ''}
+              ${li < (config.sections[si].links.length - 1) ? `<button class="btn btn-sm" onclick="moveLinkDown(${si}, ${li})">&#8595;</button>` : ''}
+              <button class="btn btn-sm btn-danger" onclick="removeLink(${si}, ${li})">&times;</button>
+            </div>
+          </div>
+          <div class="link-item-body">
+            <div class="field">
+              <label>Title</label>
+              <input type="text" value="${escapeAttr(link.title || '')}" oninput="updateLink(${si}, ${li}, 'title', this.value)">
+            </div>
+            <div class="field">
+              <label>URL</label>
+              <input type="url" value="${escapeAttr(link.url || '')}" oninput="updateLink(${si}, ${li}, 'url', this.value)">
+            </div>
+            <div class="field">
+              <label>Thumbnail URL (optional)</label>
+              <input type="text" value="${escapeAttr(link.thumbnail || '')}" oninput="updateLink(${si}, ${li}, 'thumbnail', this.value || null)" placeholder="https://... or assets/image.jpg">
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function escapeAttr(s) {
+      return s.replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    }
+
+    function toggleExpand(id) {
+      document.getElementById(id).classList.toggle('expanded');
+    }
+
+    function updateSectionTitle(si, value) {
+      config.sections[si].title = value || null;
+      saveAndPreview();
+    }
+
+    function addSection() {
+      if (!config.sections) config.sections = [];
+      config.sections.push({ title: '', links: [] });
+      renderSections();
+      saveAndPreview();
+    }
+
+    function removeSection(si) {
+      if (confirm('Remove this section and all its links?')) {
+        config.sections.splice(si, 1);
+        renderSections();
+        saveAndPreview();
+      }
+    }
+
+    function moveSectionUp(si) {
+      if (si <= 0) return;
+      [config.sections[si - 1], config.sections[si]] = [config.sections[si], config.sections[si - 1]];
+      renderSections();
+      saveAndPreview();
+    }
+
+    function moveSectionDown(si) {
+      if (si >= config.sections.length - 1) return;
+      [config.sections[si], config.sections[si + 1]] = [config.sections[si + 1], config.sections[si]];
+      renderSections();
+      saveAndPreview();
+    }
+
+    function addLink(si) {
+      if (!config.sections[si].links) config.sections[si].links = [];
+      config.sections[si].links.push({ title: 'New Link', url: '', thumbnail: null, enabled: true });
+      renderSections();
+      saveAndPreview();
+    }
+
+    function removeLink(si, li) {
+      config.sections[si].links.splice(li, 1);
+      renderSections();
+      saveAndPreview();
+    }
+
+    function updateLink(si, li, field, value) {
+      config.sections[si].links[li][field] = value;
+      // Update the preview title in the header
+      if (field === 'title') {
+        const header = document.querySelector(`#link-${si}-${li} .link-item-title-preview`);
+        if (header) header.textContent = value || 'Untitled';
+      }
+      saveAndPreview();
+    }
+
+    function toggleLink(si, li, enabled) {
+      config.sections[si].links[li].enabled = enabled;
+      saveAndPreview();
+    }
+
+    function moveLinkUp(si, li) {
+      if (li <= 0) return;
+      const links = config.sections[si].links;
+      [links[li - 1], links[li]] = [links[li], links[li - 1]];
+      renderSections();
+      saveAndPreview();
+    }
+
+    function moveLinkDown(si, li) {
+      const links = config.sections[si].links;
+      if (li >= links.length - 1) return;
+      [links[li], links[li + 1]] = [links[li + 1], links[li]];
+      renderSections();
+      saveAndPreview();
+    }
+
+    // --- Social ---
+    function renderSocial() {
+      const container = document.getElementById('socialContainer');
+      if (!config.social || config.social.length === 0) {
+        container.innerHTML = '<div class="empty-state"><p>No social links.</p></div>';
+        return;
+      }
+
+      container.innerHTML = config.social.map((s, i) => `
+        <div class="link-item" style="margin-bottom:10px">
+          <div class="field">
+            <label>Platform</label>
+            <select onchange="updateSocial(${i}, 'platform', this.value)">
+              ${['instagram','twitter','youtube','tiktok','facebook','linkedin','spotify','snapchat','email','website'].map(p =>
+                `<option value="${p}" ${s.platform === p ? 'selected' : ''}>${p.charAt(0).toUpperCase() + p.slice(1)}</option>`
+              ).join('')}
+            </select>
+          </div>
+          <div class="field">
+            <label>URL</label>
+            <input type="url" value="${escapeAttr(s.url || '')}" oninput="updateSocial(${i}, 'url', this.value)">
+          </div>
+          <div class="field">
+            <label>Label</label>
+            <input type="text" value="${escapeAttr(s.label || '')}" oninput="updateSocial(${i}, 'label', this.value)">
+          </div>
+          <button class="btn btn-sm btn-danger" onclick="removeSocial(${i})" style="margin-top:8px">Remove</button>
+        </div>
+      `).join('');
+    }
+
+    function addSocial() {
+      if (!config.social) config.social = [];
+      config.social.push({ platform: 'instagram', url: '', label: '' });
+      renderSocial();
+      saveAndPreview();
+    }
+
+    function removeSocial(i) {
+      config.social.splice(i, 1);
+      renderSocial();
+      saveAndPreview();
+    }
+
+    function updateSocial(i, field, value) {
+      config.social[i][field] = value;
+      saveAndPreview();
+    }
+
+    // --- Export / Import ---
+    function exportConfig() {
+      const content = `const SITE_CONFIG = ${JSON.stringify(config, null, 2)};\n`;
+      const blob = new Blob([content], { type: 'application/javascript' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'config.js';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('config.js exported!');
+    }
+
+    function importConfig() {
+      document.getElementById('importInput').click();
+    }
+
+    function handleImport(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          let text = e.target.result;
+          // Try parsing as JSON first
+          try {
+            config = JSON.parse(text);
+          } catch {
+            // Try extracting from JS: const SITE_CONFIG = {...};
+            const match = text.match(/=\s*(\{[\s\S]*\})\s*;?\s*$/);
+            if (match) {
+              config = JSON.parse(match[1]);
+            } else {
+              throw new Error('Could not parse config');
+            }
+          }
+          populateForm();
+          saveAndPreview();
+          showToast('Config imported!');
+        } catch (err) {
+          showToast('Error importing: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    // --- Preview Modal ---
+    function togglePreviewModal() {
+      const modal = document.getElementById('previewModal');
+      modal.classList.toggle('open');
+      if (modal.classList.contains('open')) {
+        sendPreview();
+      }
+    }
+
+    // --- Toast ---
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    // --- Init ---
+    populateForm();
+
+    // Send preview once iframe loads
+    document.getElementById('previewFrame').addEventListener('load', () => {
+      setTimeout(sendPreview, 100);
+    });
+
+    const mobileFrame = document.getElementById('previewFrameMobile');
+    if (mobileFrame) {
+      mobileFrame.addEventListener('load', () => {
+        setTimeout(sendPreview, 100);
+      });
+    }
+
+    // Also reset draft functionality
+    window.addEventListener('keydown', (e) => {
+      // Ctrl/Cmd+Shift+R to reset to original config
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'R') {
+        e.preventDefault();
+        if (confirm('Reset to original config.js? This will discard all unsaved changes.')) {
+          localStorage.removeItem('linktree_draft');
+          config = JSON.parse(JSON.stringify(SITE_CONFIG));
+          populateForm();
+          saveAndPreview();
+          showToast('Reset to original config');
+        }
+      }
+    });
+
+    // =============================================
+    // ANALYTICS
+    // =============================================
+    // roundRect polyfill for older browsers
+    if (!CanvasRenderingContext2D.prototype.roundRect) {
+      CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, radii) {
+        const r = Array.isArray(radii) ? radii[0] || 0 : radii || 0;
+        this.moveTo(x + r, y);
+        this.lineTo(x + w - r, y);
+        this.arcTo(x + w, y, x + w, y + r, r);
+        this.lineTo(x + w, y + h);
+        this.lineTo(x, y + h);
+        this.lineTo(x, y + r);
+        this.arcTo(x, y, x + r, y, r);
+        this.closePath();
+      };
+    }
+
+    let analyticsDays = 7;
+
+    function getViews() {
+      try { return JSON.parse(localStorage.getItem('linktree_views') || '[]'); } catch { return []; }
+    }
+
+    function getClicks() {
+      try { return JSON.parse(localStorage.getItem('linktree_clicks') || '[]'); } catch { return []; }
+    }
+
+    function setAnalyticsPeriod(days, btn) {
+      analyticsDays = days;
+      document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderAnalytics();
+    }
+
+    function renderAnalytics() {
+      const views = getViews();
+      const clicks = getClicks();
+
+      // Lifetime totals
+      document.getElementById('statViews').textContent = views.length.toLocaleString();
+      document.getElementById('statClicks').textContent = clicks.length.toLocaleString();
+      const ctr = views.length > 0 ? ((clicks.length / views.length) * 100).toFixed(1) : '0';
+      document.getElementById('statCTR').textContent = ctr + '%';
+
+      // Daily data for chart
+      const days = analyticsDays;
+      const dailyViews = {};
+      const dailyClicks = {};
+      const labels = [];
+
+      for (let i = days - 1; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const key = d.toISOString().split('T')[0];
+        dailyViews[key] = 0;
+        dailyClicks[key] = 0;
+        labels.push(key);
+      }
+
+      views.forEach(ts => {
+        const key = ts.split('T')[0];
+        if (dailyViews.hasOwnProperty(key)) dailyViews[key]++;
+      });
+
+      clicks.forEach(c => {
+        const key = c.ts.split('T')[0];
+        if (dailyClicks.hasOwnProperty(key)) dailyClicks[key]++;
+      });
+
+      drawChart(labels, dailyViews, dailyClicks);
+
+      // Top links
+      const linkCounts = {};
+      clicks.forEach(c => {
+        linkCounts[c.title] = (linkCounts[c.title] || 0) + 1;
+      });
+
+      const topLinksEl = document.getElementById('topLinks');
+      const sorted = Object.entries(linkCounts).sort((a, b) => b[1] - a[1]);
+
+      if (sorted.length === 0) {
+        topLinksEl.innerHTML = `
+          <div class="analytics-empty">
+            <p>No click data yet.</p>
+            <p style="font-size:12px">Clicks on your public page will appear here.</p>
+          </div>`;
+      } else {
+        topLinksEl.innerHTML = sorted.map(([title, count]) => `
+          <div class="top-link-row">
+            <span class="top-link-name">${title}</span>
+            <span class="top-link-count">${count} click${count !== 1 ? 's' : ''}</span>
+          </div>
+        `).join('');
+      }
+    }
+
+    function drawChart(labels, viewsData, clicksData) {
+      const canvas = document.getElementById('activityChart');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.parentElement.getBoundingClientRect();
+
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      canvas.style.width = rect.width + 'px';
+      canvas.style.height = rect.height + 'px';
+      ctx.scale(dpr, dpr);
+
+      const w = rect.width;
+      const h = rect.height;
+      const padding = { top: 20, right: 20, bottom: 32, left: 40 };
+      const chartW = w - padding.left - padding.right;
+      const chartH = h - padding.top - padding.bottom;
+
+      ctx.clearRect(0, 0, w, h);
+
+      const viewsArr = labels.map(k => viewsData[k] || 0);
+      const clicksArr = labels.map(k => clicksData[k] || 0);
+      const maxVal = Math.max(...viewsArr, ...clicksArr, 1);
+      const yStep = Math.ceil(maxVal / 4);
+      const yMax = yStep * 4;
+
+      // Grid lines and Y labels
+      ctx.strokeStyle = '#e5e7eb';
+      ctx.lineWidth = 1;
+      ctx.fillStyle = '#9ca3af';
+      ctx.font = '11px Inter, sans-serif';
+      ctx.textAlign = 'right';
+
+      for (let i = 0; i <= 4; i++) {
+        const y = padding.top + chartH - (i / 4) * chartH;
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(w - padding.right, y);
+        ctx.stroke();
+        ctx.fillText(String(yStep * i), padding.left - 8, y + 4);
+      }
+
+      // X labels
+      ctx.textAlign = 'center';
+      const barGroupWidth = chartW / labels.length;
+      const barWidth = Math.min(barGroupWidth * 0.3, 20);
+      const gap = 3;
+
+      labels.forEach((label, i) => {
+        const x = padding.left + i * barGroupWidth + barGroupWidth / 2;
+        const d = new Date(label + 'T12:00:00');
+        const dayLabel = d.toLocaleDateString('en', { month: 'short', day: 'numeric' });
+        ctx.fillStyle = '#9ca3af';
+        ctx.fillText(dayLabel, x, h - 8);
+
+        // Views bar
+        const vh = (viewsArr[i] / yMax) * chartH;
+        ctx.fillStyle = '#6c3bf5';
+        ctx.beginPath();
+        ctx.roundRect(x - barWidth - gap / 2, padding.top + chartH - vh, barWidth, vh, [3, 3, 0, 0]);
+        ctx.fill();
+
+        // Clicks bar
+        const ch = (clicksArr[i] / yMax) * chartH;
+        ctx.fillStyle = '#FFD700';
+        ctx.beginPath();
+        ctx.roundRect(x + gap / 2, padding.top + chartH - ch, barWidth, ch, [3, 3, 0, 0]);
+        ctx.fill();
+      });
+    }
+
+    function clearAnalytics() {
+      if (confirm('Clear all analytics data? This cannot be undone.')) {
+        localStorage.removeItem('linktree_views');
+        localStorage.removeItem('linktree_clicks');
+        renderAnalytics();
+        showToast('Analytics data cleared');
+      }
+    }
+
+    // Redraw chart on resize
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (document.getElementById('tab-analytics').classList.contains('active')) {
+          renderAnalytics();
+        }
+      }, 200);
+    });
+
+    // Render analytics when tab is shown
+    const origTabClick = document.querySelectorAll('.tab');
+    origTabClick.forEach(tab => {
+      tab.addEventListener('click', () => {
+        if (tab.dataset.tab === 'analytics') {
+          setTimeout(renderAnalytics, 50);
+        }
+        if (tab.dataset.tab === 'share') {
+          setTimeout(generateQR, 50);
+        }
+      });
+    });
+
+    // =============================================
+    // QR CODE
+    // =============================================
+    let qrCanvas = null;
+
+    function generateQR() {
+      const url = document.getElementById('qrUrl').value.trim();
+      const container = document.getElementById('qrPreview');
+
+      if (!url) {
+        container.innerHTML = '<p style="color:var(--text-secondary);font-size:14px">Enter your URL above to generate a QR code</p>';
+        qrCanvas = null;
+        return;
+      }
+
+      const size = parseInt(document.getElementById('qrSize').value);
+      const margin = parseInt(document.getElementById('qrMargin').value);
+      const fg = document.getElementById('qrFg').value;
+      const bg = document.getElementById('qrBg').value;
+
+      container.innerHTML = '';
+      const canvas = document.createElement('canvas');
+      container.appendChild(canvas);
+
+      if (typeof QRCode !== 'undefined' && QRCode.toCanvas) {
+        QRCode.toCanvas(canvas, url, {
+          width: size,
+          margin: margin,
+          color: {
+            dark: fg,
+            light: bg
+          },
+          errorCorrectionLevel: 'M'
+        }, (err) => {
+          if (err) {
+            container.innerHTML = '<p style="color:var(--danger);font-size:14px">Error generating QR code</p>';
+            qrCanvas = null;
+          } else {
+            qrCanvas = canvas;
+          }
+        });
+      } else {
+        container.innerHTML = '<p style="color:var(--danger);font-size:14px">QR code library loading... please try again.</p>';
+      }
+    }
+
+    function downloadQR() {
+      if (!qrCanvas) {
+        showToast('Generate a QR code first');
+        return;
+      }
+      const link = document.createElement('a');
+      link.download = 'qr-code.png';
+      link.href = qrCanvas.toDataURL('image/png');
+      link.click();
+      showToast('QR code downloaded!');
+    }
+
+    async function copyQR() {
+      if (!qrCanvas) {
+        showToast('Generate a QR code first');
+        return;
+      }
+      try {
+        const blob = await new Promise(resolve => qrCanvas.toBlob(resolve, 'image/png'));
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        showToast('QR code copied to clipboard!');
+      } catch (e) {
+        showToast('Could not copy — try downloading instead');
+      }
+    }
+  </script>
+</body>
+</html>
