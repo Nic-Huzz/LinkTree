@@ -400,6 +400,110 @@
       to { transform: rotate(360deg); }
     }
 
+    /* Coming Soon / Interest Form */
+    .link-card.coming-soon {
+      cursor: pointer;
+      position: relative;
+    }
+
+    .coming-soon-badge {
+      background: var(--accent);
+      color: #1a1a1a;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-right: 14px;
+      flex-shrink: 0;
+    }
+
+    .interest-form {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                  padding 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      background: var(--card-bg);
+      border-radius: 0 0 var(--card-radius) var(--card-radius);
+      margin-top: -6px;
+      margin-bottom: 12px;
+      padding: 0 20px;
+    }
+
+    .interest-form.open {
+      max-height: 400px;
+      padding: 16px 20px 20px;
+      border: 1px solid rgba(0,0,0,0.06);
+      border-top: none;
+    }
+
+    .interest-form input,
+    .interest-form textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: var(--font);
+      margin-bottom: 8px;
+      color: #1a1a1a;
+      background: #fafafa;
+      transition: border-color 0.15s;
+    }
+
+    .interest-form input:focus,
+    .interest-form textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: #fff;
+    }
+
+    .interest-form textarea {
+      resize: vertical;
+      min-height: 50px;
+    }
+
+    .interest-form button {
+      width: 100%;
+      padding: 11px;
+      border: none;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #1a1a1a;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .interest-form button:hover {
+      opacity: 0.9;
+      transform: scale(1.01);
+    }
+
+    .interest-form button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .form-success {
+      text-align: center;
+      padding: 12px 0;
+      color: #16a34a;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .form-error {
+      text-align: center;
+      padding: 8px 0 0;
+      color: #ef4444;
+      font-size: 13px;
+    }
+
     /* Responsive */
     @media (max-width: 480px) {
       .profile-name {
@@ -549,12 +653,33 @@
           const thumbHTML = link.thumbnail
             ? `<img class="link-thumb" src="${esc(link.thumbnail)}" alt="${esc(link.title)}" loading="lazy" onerror="this.remove()">`
             : '';
-          html += `
-            <a href="${esc(link.url)}" target="_blank" rel="noopener noreferrer"
-               class="link-card ${hasThumb} link-animate" data-index="${linkIndex}">
-              ${thumbHTML}
-              <span class="link-title">${esc(link.title)}</span>
-            </a>`;
+
+          if (link.type === 'coming-soon') {
+            const formId = 'form-' + linkIndex;
+            html += `
+              <div class="link-card coming-soon ${hasThumb} link-animate" data-index="${linkIndex}"
+                   onclick="toggleInterestForm('${formId}')">
+                ${thumbHTML}
+                <span class="link-title">${esc(link.title)}</span>
+                <span class="coming-soon-badge">Coming Soon</span>
+              </div>
+              <div class="interest-form" id="${formId}">
+                <input type="text" placeholder="Your name" id="${formId}-name" required>
+                <input type="email" placeholder="Your email" id="${formId}-email" required>
+                <textarea placeholder="Anything you'd like us to know? (optional)" id="${formId}-msg" rows="2"></textarea>
+                <button onclick="event.stopPropagation();submitInterest('${formId}', '${esc(link.title)}')" id="${formId}-btn">
+                  Notify Me
+                </button>
+                <div id="${formId}-status"></div>
+              </div>`;
+          } else {
+            html += `
+              <a href="${esc(link.url)}" target="_blank" rel="noopener noreferrer"
+                 class="link-card ${hasThumb} link-animate" data-index="${linkIndex}">
+                ${thumbHTML}
+                <span class="link-title">${esc(link.title)}</span>
+              </a>`;
+          }
           linkIndex++;
         });
       });
@@ -605,6 +730,65 @@
 
     // Initial render
     render(getConfig());
+
+    // --- Supabase Config (for interest forms) ---
+    const SUPABASE_URL = 'https://wiwlydjvpwvlosfojdbz.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_HdoH-muE7XTiA5_W6FMWUQ_VT4R_XDw';
+
+    function toggleInterestForm(formId) {
+      const form = document.getElementById(formId);
+      if (form) form.classList.toggle('open');
+    }
+
+    async function submitInterest(formId, itemTitle) {
+      const name = document.getElementById(formId + '-name').value.trim();
+      const email = document.getElementById(formId + '-email').value.trim();
+      const msg = document.getElementById(formId + '-msg').value.trim();
+      const btn = document.getElementById(formId + '-btn');
+      const status = document.getElementById(formId + '-status');
+
+      if (!name || !email) {
+        status.innerHTML = '<div class="form-error">Please enter your name and email.</div>';
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        status.innerHTML = '<div class="form-error">Please enter a valid email.</div>';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Submitting...';
+      status.innerHTML = '';
+
+      try {
+        const res = await fetch(SUPABASE_URL + '/rest/v1/interest_submissions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_KEY,
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({
+            name: name,
+            email: email,
+            item_title: itemTitle,
+            message: msg || null
+          })
+        });
+
+        if (res.ok) {
+          const form = document.getElementById(formId);
+          form.innerHTML = '<div class="form-success">Thanks ' + esc(name) + '! We\'ll keep you in the loop.</div>';
+        } else {
+          throw new Error('Submission failed');
+        }
+      } catch (e) {
+        btn.disabled = false;
+        btn.textContent = 'Notify Me';
+        status.innerHTML = '<div class="form-error">Something went wrong. Please try again.</div>';
+      }
+    }
 
     // --- Analytics Tracking ---
     function trackView() {

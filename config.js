@@ -70,7 +70,15 @@ const SITE_CONFIG = {
     },
     {
       title: "My Events",
-      links: []
+      links: [
+        {
+          title: "Sunset Silent Disco @ Dreamland Beach",
+          url: null,
+          thumbnail: null,
+          type: "coming-soon",
+          enabled: true
+        }
+      ]
     }
   ],
 

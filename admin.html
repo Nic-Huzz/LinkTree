@@ -1205,12 +1205,19 @@
           </div>
           <div class="link-item-body">
             <div class="field">
+              <label>Type</label>
+              <select onchange="updateLink(${si}, ${li}, 'type', this.value || null)">
+                <option value="" ${!link.type ? 'selected' : ''}>Regular Link</option>
+                <option value="coming-soon" ${link.type === 'coming-soon' ? 'selected' : ''}>Coming Soon (interest form)</option>
+              </select>
+            </div>
+            <div class="field">
               <label>Title</label>
               <input type="text" value="${escapeAttr(link.title || '')}" oninput="updateLink(${si}, ${li}, 'title', this.value)">
             </div>
             <div class="field">
-              <label>URL</label>
-              <input type="url" value="${escapeAttr(link.url || '')}" oninput="updateLink(${si}, ${li}, 'url', this.value)">
+              <label>URL ${link.type === 'coming-soon' ? '(not used)' : ''}</label>
+              <input type="url" value="${escapeAttr(link.url || '')}" oninput="updateLink(${si}, ${li}, 'url', this.value)" ${link.type === 'coming-soon' ? 'disabled placeholder="Not needed for coming soon"' : ''}>
             </div>
             <div class="field">
               <label>Thumbnail URL (optional)</label>
@@ -1264,7 +1271,7 @@
 
     function addLink(si) {
       if (!config.sections[si].links) config.sections[si].links = [];
-      config.sections[si].links.push({ title: 'New Link', url: '', thumbnail: null, enabled: true });
+      config.sections[si].links.push({ title: 'New Link', url: '', thumbnail: null, type: null, enabled: true });
       renderSections();
       saveAndPreview();
     }
