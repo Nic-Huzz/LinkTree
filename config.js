@@ -10,6 +10,11 @@ const SITE_CONFIG = {
       "platform": "instagram",
       "url": "https://instagram.com/_huzz",
       "label": "Instagram"
+    },
+    {
+      "platform": "whatsapp",
+      "url": "https://wa.me/61423220241",
+      "label": "WhatsApp"
     }
   ],
   "theme": {

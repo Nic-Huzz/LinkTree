@@ -855,19 +855,28 @@
 
       <!-- Analytics Tab -->
       <div class="tab-content" id="tab-analytics">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div class="analytics-source" style="font-size:12px;color:var(--text-secondary)">
+            <span id="analyticsSource">Loading...</span>
+          </div>
+          <button class="btn btn-sm" onclick="renderAnalytics()" style="gap:4px">
+            &#8635; Refresh
+          </button>
+        </div>
+
         <div class="card">
           <div class="card-title">Lifetime Totals</div>
           <div class="stats-grid">
             <div class="stat">
-              <div class="stat-value" id="statViews">0</div>
+              <div class="stat-value" id="statViews">-</div>
               <div class="stat-label">Views</div>
             </div>
             <div class="stat">
-              <div class="stat-value" id="statClicks">0</div>
+              <div class="stat-value" id="statClicks">-</div>
               <div class="stat-label">Clicks</div>
             </div>
             <div class="stat">
-              <div class="stat-value" id="statCTR">0%</div>
+              <div class="stat-value" id="statCTR">-</div>
               <div class="stat-label">Click Rate</div>
             </div>
           </div>
@@ -895,14 +904,18 @@
           <div class="card-title">Clicks Per Link</div>
           <div id="topLinks">
             <div class="analytics-empty">
-              <p>No click data yet.</p>
-              <p style="font-size:12px">Clicks on your public page will appear here.</p>
+              <p>Loading...</p>
             </div>
           </div>
         </div>
 
-        <div class="clear-data-row">
-          <button class="btn btn-sm btn-danger" onclick="clearAnalytics()">Clear Analytics Data</button>
+        <div class="card">
+          <div class="card-title">Recent Interest Submissions</div>
+          <div id="interestSubmissions">
+            <div class="analytics-empty">
+              <p>Loading...</p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1326,7 +1339,7 @@
           <div class="field">
             <label>Platform</label>
             <select onchange="updateSocial(${i}, 'platform', this.value)">
-              ${['instagram','twitter','youtube','tiktok','facebook','linkedin','spotify','snapchat','email','website'].map(p =>
+              ${['instagram','whatsapp','twitter','youtube','tiktok','facebook','linkedin','spotify','snapchat','email','website'].map(p =>
                 `<option value="${p}" ${s.platform === p ? 'selected' : ''}>${p.charAt(0).toUpperCase() + p.slice(1)}</option>`
               ).join('')}
             </select>
@@ -1457,8 +1470,11 @@
     });
 
     // =============================================
-    // ANALYTICS
+    // ANALYTICS (Supabase-powered)
     // =============================================
+    const SB_URL = 'https://wiwlydjvpwvlosfojdbz.supabase.co';
+    const SB_KEY = 'sb_publishable_HdoH-muE7XTiA5_W6FMWUQ_VT4R_XDw';
+
     // roundRect polyfill for older browsers
     if (!CanvasRenderingContext2D.prototype.roundRect) {
       CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, radii) {
@@ -1475,25 +1491,62 @@
     }
 
     let analyticsDays = 7;
+    let cachedViews = null;
+    let cachedClicks = null;
+    let cachedSubmissions = null;
 
-    function getViews() {
-      try { return JSON.parse(localStorage.getItem('linktree_views') || '[]'); } catch { return []; }
-    }
-
-    function getClicks() {
-      try { return JSON.parse(localStorage.getItem('linktree_clicks') || '[]'); } catch { return []; }
+    async function sbFetch(table, query) {
+      const res = await fetch(`${SB_URL}/rest/v1/${table}?${query}`, {
+        headers: {
+          'apikey': SB_KEY,
+          'Authorization': 'Bearer ' + SB_KEY
+        }
+      });
+      if (!res.ok) throw new Error(`Supabase ${res.status}`);
+      return res.json();
     }
 
     function setAnalyticsPeriod(days, btn) {
       analyticsDays = days;
       document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      renderAnalytics();
+      renderAnalyticsFromCache();
     }
 
-    function renderAnalytics() {
-      const views = getViews();
-      const clicks = getClicks();
+    async function renderAnalytics() {
+      const srcEl = document.getElementById('analyticsSource');
+      srcEl.textContent = 'Fetching from Supabase...';
+
+      try {
+        const [views, clicks, submissions] = await Promise.all([
+          sbFetch('page_views', 'select=viewed_at&order=viewed_at.desc'),
+          sbFetch('link_clicks', 'select=link_title,link_url,clicked_at&order=clicked_at.desc'),
+          sbFetch('interest_submissions', 'select=name,email,item_title,message,created_at&order=created_at.desc&limit=20')
+        ]);
+
+        cachedViews = views;
+        cachedClicks = clicks;
+        cachedSubmissions = submissions;
+        srcEl.innerHTML = 'Supabase &mdash; ' + new Date().toLocaleTimeString();
+        renderAnalyticsFromCache();
+      } catch (e) {
+        srcEl.textContent = 'Error: ' + e.message;
+        // Fallback to localStorage
+        try {
+          cachedViews = JSON.parse(localStorage.getItem('linktree_views') || '[]').map(ts => ({ viewed_at: ts }));
+          cachedClicks = JSON.parse(localStorage.getItem('linktree_clicks') || '[]').map(c => ({ link_title: c.title, link_url: c.url, clicked_at: c.ts }));
+          cachedSubmissions = [];
+          srcEl.textContent = 'localStorage (Supabase unavailable)';
+          renderAnalyticsFromCache();
+        } catch { }
+      }
+    }
+
+    function renderAnalyticsFromCache() {
+      if (!cachedViews || !cachedClicks) return;
+
+      const views = cachedViews;
+      const clicks = cachedClicks;
 
       // Lifetime totals
       document.getElementById('statViews').textContent = views.length.toLocaleString();
@@ -1516,13 +1569,13 @@
         labels.push(key);
       }
 
-      views.forEach(ts => {
-        const key = ts.split('T')[0];
+      views.forEach(v => {
+        const key = (v.viewed_at || '').split('T')[0];
         if (dailyViews.hasOwnProperty(key)) dailyViews[key]++;
       });
 
       clicks.forEach(c => {
-        const key = c.ts.split('T')[0];
+        const key = (c.clicked_at || '').split('T')[0];
         if (dailyClicks.hasOwnProperty(key)) dailyClicks[key]++;
       });
 
@@ -1531,7 +1584,8 @@
       // Top links
       const linkCounts = {};
       clicks.forEach(c => {
-        linkCounts[c.title] = (linkCounts[c.title] || 0) + 1;
+        const title = c.link_title || 'Unknown';
+        linkCounts[title] = (linkCounts[title] || 0) + 1;
       });
 
       const topLinksEl = document.getElementById('topLinks');
@@ -1546,11 +1600,38 @@
       } else {
         topLinksEl.innerHTML = sorted.map(([title, count]) => `
           <div class="top-link-row">
-            <span class="top-link-name">${title}</span>
+            <span class="top-link-name">${escapeAttr(title)}</span>
             <span class="top-link-count">${count} click${count !== 1 ? 's' : ''}</span>
           </div>
         `).join('');
       }
+
+      // Interest submissions
+      renderSubmissions();
+    }
+
+    function renderSubmissions() {
+      const el = document.getElementById('interestSubmissions');
+      if (!cachedSubmissions || cachedSubmissions.length === 0) {
+        el.innerHTML = `
+          <div class="analytics-empty">
+            <p>No submissions yet.</p>
+            <p style="font-size:12px">Interest form responses will appear here.</p>
+          </div>`;
+        return;
+      }
+
+      el.innerHTML = cachedSubmissions.map(s => {
+        const date = new Date(s.created_at).toLocaleDateString('en', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        return `
+          <div class="top-link-row" style="flex-wrap:wrap;gap:4px">
+            <span class="top-link-name" style="min-width:0">
+              <strong>${escapeAttr(s.name)}</strong> &mdash; ${escapeAttr(s.email)}
+            </span>
+            <span style="font-size:12px;color:var(--text-secondary);white-space:nowrap">${escapeAttr(s.item_title)} &middot; ${date}</span>
+            ${s.message ? `<div style="width:100%;font-size:13px;color:var(--text-secondary);padding:4px 0 0">&ldquo;${escapeAttr(s.message)}&rdquo;</div>` : ''}
+          </div>`;
+      }).join('');
     }
 
     function drawChart(labels, viewsData, clicksData) {
@@ -1625,22 +1706,13 @@
       });
     }
 
-    function clearAnalytics() {
-      if (confirm('Clear all analytics data? This cannot be undone.')) {
-        localStorage.removeItem('linktree_views');
-        localStorage.removeItem('linktree_clicks');
-        renderAnalytics();
-        showToast('Analytics data cleared');
-      }
-    }
-
     // Redraw chart on resize
     let resizeTimer;
     window.addEventListener('resize', () => {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => {
         if (document.getElementById('tab-analytics').classList.contains('active')) {
-          renderAnalytics();
+          renderAnalyticsFromCache();
         }
       }, 200);
     });
