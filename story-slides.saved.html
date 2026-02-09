@@ -1,0 +1,354 @@
+<!--
+  STORY SLIDES - Saved for later integration
+  To re-enable: paste the CSS into <style>, HTML into <body>, and JS into <script> in index.html
+-->
+
+<!-- ============ CSS (add inside <style> before responsive media query) ============ -->
+<style>
+    /* Story Slides Overlay */
+    .story-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 900;
+      background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 35%, var(--bg-bottom) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+      overflow: hidden;
+    }
+
+    .story-overlay.animated-bg {
+      background-size: 200% 200% !important;
+      animation: gradientShift 12s ease infinite;
+    }
+
+    .story-overlay.fade-out {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .story-slides {
+      width: 100%;
+      max-width: 420px;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 24px;
+    }
+
+    .story-slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+      opacity: 0;
+      transform: translateX(60px);
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+
+    .story-slide.active {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+
+    .story-slide.exit-left {
+      opacity: 0;
+      transform: translateX(-60px);
+    }
+
+    .story-slide .slide-photo {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid rgba(255,255,255,0.2);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+      margin-bottom: 24px;
+    }
+
+    .story-slide .slide-emoji {
+      font-size: 64px;
+      margin-bottom: 24px;
+      line-height: 1;
+    }
+
+    .story-slide h2 {
+      color: var(--name-color);
+      font-size: 28px;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .story-slide p {
+      color: rgba(255,255,255,0.9);
+      font-size: 16px;
+      text-align: center;
+      line-height: 1.6;
+      max-width: 320px;
+      margin-bottom: 32px;
+    }
+
+    .story-choices {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    .story-choice {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      font-family: var(--font);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      text-align: left;
+    }
+
+    .story-choice:hover {
+      background: rgba(255,255,255,0.2);
+      border-color: rgba(255,255,255,0.3);
+      transform: scale(1.03);
+    }
+
+    .story-choice:active {
+      transform: scale(0.98);
+    }
+
+    .story-choice .choice-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    /* Story navigation */
+    .story-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 901;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 40px;
+      pointer-events: none;
+    }
+
+    .story-progress {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .story-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      transition: all 0.3s ease;
+    }
+
+    .story-dot.active {
+      background: var(--name-color);
+      width: 24px;
+      border-radius: 4px;
+    }
+
+    .story-next-btn {
+      pointer-events: auto;
+      padding: 14px 48px;
+      border-radius: 28px;
+      border: none;
+      background: var(--accent);
+      color: #1a1a1a;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    .story-next-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 28px rgba(0,0,0,0.3);
+    }
+
+    .story-next-btn:active {
+      transform: scale(0.97);
+    }
+
+    .story-skip {
+      pointer-events: auto;
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 902;
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.5);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: var(--font);
+      padding: 8px 12px;
+      transition: color 0.2s;
+    }
+
+    .story-skip:hover {
+      color: rgba(255,255,255,0.8);
+    }
+
+    /* Add these to @media (max-width: 480px) */
+    .story-slide h2 { font-size: 24px; }
+    .story-slide p { font-size: 15px; }
+    .story-slide .slide-photo { width: 120px; height: 120px; }
+    .story-nav { padding-bottom: 32px; }
+</style>
+
+<!-- ============ HTML (add after preloader div) ============ -->
+<div class="story-overlay animated-bg" id="storyOverlay" style="display:none;">
+  <button class="story-skip" onclick="closeStory()">Skip</button>
+  <div class="story-slides">
+    <div class="story-slide active" data-slide="0">
+      <img class="slide-photo" src="assets/profile.jpg" alt="Nic Huzz">
+      <h2>Hey! I'm Nic</h2>
+      <p>Welcome to my little corner of the internet. I'm on a mission to make healing fun.</p>
+    </div>
+    <div class="story-slide" data-slide="1">
+      <div class="slide-emoji">✨</div>
+      <h2>Healing, But Fun</h2>
+      <p>From breathwork and movement to silent discos and retreats — I believe transformation doesn't have to feel heavy.</p>
+    </div>
+    <div class="story-slide" data-slide="2">
+      <div class="slide-emoji">🧭</div>
+      <h2>What brings you here?</h2>
+      <p>Tap what you're curious about and I'll take you there.</p>
+      <div class="story-choices">
+        <button class="story-choice" onclick="storyJump('My Events')">
+          <span class="choice-icon">🎪</span> Upcoming Events
+        </button>
+        <button class="story-choice" onclick="storyJump('Headsets')">
+          <span class="choice-icon">🎧</span> Silent Disco Headsets
+        </button>
+        <button class="story-choice" onclick="storyJump('Online Tools')">
+          <span class="choice-icon">🛠️</span> Online Tools & Community
+        </button>
+        <button class="story-choice" onclick="storyJump('Coming Soon')">
+          <span class="choice-icon">🔮</span> What's Coming Next
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="story-nav">
+    <div class="story-progress">
+      <div class="story-dot active" data-dot="0"></div>
+      <div class="story-dot" data-dot="1"></div>
+      <div class="story-dot" data-dot="2"></div>
+    </div>
+    <button class="story-next-btn" id="storyNextBtn" onclick="nextSlide()">Next</button>
+  </div>
+</div>
+
+<!-- ============ JS (add before preloader code) ============ -->
+<script>
+    // --- Story Slides ---
+    let currentSlide = 0;
+    const totalSlides = 3;
+
+    function showStory() {
+      if (window !== window.top) return;
+      if (localStorage.getItem('linktree_story_seen')) return;
+      const overlay = document.getElementById('storyOverlay');
+      if (overlay) overlay.style.display = '';
+    }
+
+    function nextSlide() {
+      if (currentSlide >= totalSlides - 1) {
+        closeStory();
+        return;
+      }
+      const prev = document.querySelector(`.story-slide[data-slide="${currentSlide}"]`);
+      if (prev) {
+        prev.classList.remove('active');
+        prev.classList.add('exit-left');
+      }
+      currentSlide++;
+      const next = document.querySelector(`.story-slide[data-slide="${currentSlide}"]`);
+      if (next) next.classList.add('active');
+
+      document.querySelectorAll('.story-dot').forEach(d => d.classList.remove('active'));
+      const dot = document.querySelector(`.story-dot[data-dot="${currentSlide}"]`);
+      if (dot) dot.classList.add('active');
+
+      const btn = document.getElementById('storyNextBtn');
+      if (currentSlide === totalSlides - 1) {
+        btn.textContent = 'Explore All';
+      }
+    }
+
+    function closeStory() {
+      localStorage.setItem('linktree_story_seen', '1');
+      const overlay = document.getElementById('storyOverlay');
+      if (overlay) {
+        overlay.classList.add('fade-out');
+        setTimeout(() => overlay.remove(), 500);
+      }
+    }
+
+    function storyJump(sectionKeyword) {
+      closeStory();
+      setTimeout(() => {
+        const titles = document.querySelectorAll('.section-title');
+        for (const t of titles) {
+          if (t.textContent.includes(sectionKeyword)) {
+            t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            break;
+          }
+        }
+      }, 550);
+    }
+
+    // Swipe support
+    (function() {
+      const overlay = document.getElementById('storyOverlay');
+      if (!overlay) return;
+      let startX = 0, startY = 0;
+      overlay.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+      }, { passive: true });
+      overlay.addEventListener('touchend', (e) => {
+        const dx = e.changedTouches[0].clientX - startX;
+        const dy = e.changedTouches[0].clientY - startY;
+        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+          if (dx < 0) nextSlide();
+        }
+      }, { passive: true });
+    })();
+
+    // In the preloader load handler, call showStory() after preloader removes:
+    // setTimeout(() => { pl.remove(); showStory(); }, 600);
+</script>

@@ -305,6 +305,15 @@
       }
     }
 
+    /* Social + Share row */
+    .social-share-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.35s both;
+    }
+
     /* Share button */
     .share-row {
       display: flex;
@@ -409,14 +418,17 @@
     .coming-soon-badge {
       background: var(--accent);
       color: #1a1a1a;
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding: 3px 8px;
+      letter-spacing: 0.04em;
+      padding: 5px 10px;
       border-radius: 4px;
       margin-right: 14px;
       flex-shrink: 0;
+      line-height: 1.4;
+      text-align: center;
+      white-space: pre-line;
     }
 
     .interest-form {
@@ -610,29 +622,28 @@
         }
       }
 
-      let socialHTML = '';
+      let socialIcons = '';
       if (config.social && config.social.length) {
-        const icons = config.social.map(s => {
+        socialIcons = config.social.map(s => {
           const svg = SOCIAL_ICONS[s.platform] || SOCIAL_ICONS.website;
           return `<a href="${s.url}" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="${s.label || s.platform}" title="${s.label || s.platform}">${svg}</a>`;
         }).join('');
-        socialHTML = `<div class="social-row">${icons}</div>`;
       }
 
-      const shareHTML = `
-        <div class="share-row">
-          <button class="share-btn" onclick="shareProfile()">
-            <svg viewBox="0 0 24 24"><path d="M16 5l-1.42 1.42-1.59-1.59V16h-1.98V4.83L9.42 6.42 8 5l4-4 4 4zm4 5v11a2 2 0 01-2 2H6a2 2 0 01-2-2V10c0-1.11.89-2 2-2h3v2H6v11h12V10h-3V8h3a2 2 0 012 2z"/></svg>
-            Share
-          </button>
-        </div>`;
+      const shareBtn = `
+        <button class="share-btn" onclick="shareProfile()">
+          <svg viewBox="0 0 24 24"><path d="M16 5l-1.42 1.42-1.59-1.59V16h-1.98V4.83L9.42 6.42 8 5l4-4 4 4zm4 5v11a2 2 0 01-2 2H6a2 2 0 01-2-2V10c0-1.11.89-2 2-2h3v2H6v11h12V10h-3V8h3a2 2 0 012 2z"/></svg>
+          Share
+        </button>`;
 
       el.innerHTML = `
         ${photoHTML}
         <h1 class="profile-name">${esc(p.name)}</h1>
         <p class="profile-bio">${esc(p.bio)}</p>
-        ${socialHTML}
-        ${shareHTML}
+        <div class="social-share-row">
+          ${socialIcons}
+          ${shareBtn}
+        </div>
       `;
     }
 
@@ -661,7 +672,8 @@
                    onclick="toggleInterestForm('${formId}')">
                 ${thumbHTML}
                 <span class="link-title">${esc(link.title)}</span>
-                <span class="coming-soon-badge">Coming Soon</span>
+                <span class="coming-soon-badge">Coming Soon
+Express Interest</span>
               </div>
               <div class="interest-form" id="${formId}">
                 <input type="text" placeholder="Your name" id="${formId}-name" required>
@@ -790,7 +802,7 @@
       }
     }
 
-    // --- Analytics Tracking ---
+    // --- Analytics Tracking (localStorage + Supabase) ---
     function trackView() {
       try {
         const views = JSON.parse(localStorage.getItem('linktree_views') || '[]');
@@ -798,6 +810,20 @@
         if (views.length > 10000) views.splice(0, views.length - 10000);
         localStorage.setItem('linktree_views', JSON.stringify(views));
       } catch (e) {}
+      // Also send to Supabase
+      fetch(SUPABASE_URL + '/rest/v1/page_views', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({
+          referrer: document.referrer || null,
+          user_agent: navigator.userAgent || null
+        })
+      }).catch(() => {});
     }
 
     function trackClick(title, url) {
@@ -807,6 +833,22 @@
         if (clicks.length > 10000) clicks.splice(0, clicks.length - 10000);
         localStorage.setItem('linktree_clicks', JSON.stringify(clicks));
       } catch (e) {}
+      // Also send to Supabase
+      fetch(SUPABASE_URL + '/rest/v1/link_clicks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({
+          link_title: title,
+          link_url: url || null,
+          referrer: document.referrer || null,
+          user_agent: navigator.userAgent || null
+        })
+      }).catch(() => {});
     }
 
     // Track page view (skip if in preview iframe)
