@@ -485,18 +485,40 @@
     .battle-vs { text-align: center; font-size: 18px; font-weight: 700; color: white; }
 
     /* --- Reveal phase --- */
-    .reveal-phase { width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: stretch; justify-content: center; height: 100%; position: relative; overflow: hidden; padding: 20px 0; text-align: center; }
+    .reveal-phase { width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: stretch; justify-content: center; min-height: 100%; position: relative; overflow: visible; padding: 20px 0; text-align: center; }
     .reveal-img { width: 160px; height: 160px; border-radius: 20px; object-fit: contain; background: white; box-shadow: 0 10px 40px rgba(0,0,0,.3); margin: 0 auto 24px; animation: revealPop .5s cubic-bezier(.34,1.56,.64,1); }
     @keyframes revealPop { 0%{transform:scale(0);opacity:0} 100%{transform:scale(1);opacity:1} }
     .reveal-badge { padding: 8px 20px; background: linear-gradient(135deg,#9333EA,#7C3AED); border-radius: 20px; color: white; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin: 0 auto 12px; display: inline-block; align-self: center; }
     .reveal-name { font-size: 28px; font-weight: 700; color: white; margin-bottom: 10px; text-align: center; }
-    .reveal-superpower { font-size: 15px; color: rgba(255,255,255,.8); text-align: center; line-height: 1.6; margin-bottom: 28px; max-width: 360px; }
+    .reveal-superpower { font-size: 15px; color: rgba(255,255,255,.8); text-align: center; line-height: 1.6; margin: 0 auto 28px; max-width: 360px; }
     .reveal-cta { display: flex; align-items: center; justify-content: center; padding: 14px 40px; border-radius: 32px; border: none; background: linear-gradient(135deg,#ffdd27,#f59e0b,#d97706); color: #2d0a5a; font-size: 16px; font-weight: 700; font-family: var(--font); cursor: pointer; text-decoration: none; transition: transform .25s, box-shadow .25s; box-shadow: 0 4px 24px rgba(233,162,59,.35); width: 100%; }
     .reveal-cta:hover { transform: scale(1.05); box-shadow: 0 8px 32px rgba(233,162,59,.5); }
     .reveal-links-btn { margin-top: 16px; display: flex; align-items: center; justify-content: center; padding: 14px 40px; border-radius: 32px; border: 2px solid rgba(255,255,255,.25); background: rgba(255,255,255,.08); color: rgba(255,255,255,.6); font-size: 16px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: all .25s cubic-bezier(.16,1,.3,1); text-decoration: none; width: 100%; }
     .reveal-links-btn:hover { background: rgba(255,255,255,.15); border-color: rgba(255,255,255,.4); color: rgba(255,255,255,.8); }
     .confetti-piece { position: absolute; top: -20px; border-radius: 2px; animation: confettiFall var(--dur) ease-out var(--delay) forwards; }
     @keyframes confettiFall { 0%{transform:translateY(0) rotate(0deg);opacity:1} 100%{transform:translateY(100vh) rotate(720deg);opacity:0} }
+
+    /* --- Email capture (inside reveal) --- */
+    .reveal-email-section { margin-top: 8px; margin-bottom: 20px; width: 100%; max-width: 360px; align-self: center; }
+    .reveal-email-prompt { font-size: 14px; color: rgba(255,255,255,.75); line-height: 1.5; margin-bottom: 16px; text-align: center; }
+    .reveal-email-input { width: 100%; padding: 14px 16px; border: 2px solid rgba(255,255,255,.2); border-radius: 12px; background: rgba(255,255,255,.1); color: white; font-size: 15px; font-family: var(--font); margin-bottom: 10px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: border-color .2s; }
+    .reveal-email-input::placeholder { color: rgba(255,255,255,.4); }
+    .reveal-email-input:focus { outline: none; border-color: rgba(255,215,0,.6); background: rgba(255,255,255,.15); }
+    .reveal-email-btn { display: flex; align-items: center; justify-content: center; width: 100%; padding: 14px 40px; border-radius: 32px; border: none; background: linear-gradient(135deg,#ffdd27,#f59e0b,#d97706); color: #2d0a5a; font-size: 16px; font-weight: 700; font-family: var(--font); cursor: pointer; transition: transform .25s, box-shadow .25s, opacity .25s; box-shadow: 0 4px 24px rgba(233,162,59,.35); }
+    .reveal-email-btn:hover { transform: scale(1.05); box-shadow: 0 8px 32px rgba(233,162,59,.5); }
+    .reveal-email-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .reveal-email-skip { margin-top: 14px; display: inline-block; color: rgba(255,255,255,.45); font-size: 13px; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; transition: color .2s; }
+    .reveal-email-skip:hover { color: rgba(255,255,255,.7); }
+    .reveal-email-success { text-align: center; padding: 16px 0; }
+    .reveal-email-success p { color: #4ade80; font-size: 16px; font-weight: 600; margin: 0 0 4px; }
+    .reveal-email-success span { color: rgba(255,255,255,.6); font-size: 13px; }
+    .reveal-email-error { color: #f87171; font-size: 13px; text-align: center; margin-top: 6px; }
+
+    /* --- Protective intro --- */
+    .protective-intro { max-width: 480px; width: 100%; text-align: center; display: flex; flex-direction: column; align-items: center; }
+    .pi-pattern-list { list-style: none; padding: 0; margin: 0 0 20px; width: 100%; text-align: left; }
+    .pi-pattern-list li { padding: 10px 16px; margin-bottom: 8px; background: rgba(255,255,255,.08); border-radius: 12px; color: rgba(255,255,255,.85); font-size: 15px; display: flex; align-items: center; gap: 10px; }
+    .pi-pattern-list li span.pi-emoji { font-size: 20px; flex-shrink: 0; }
 
     @media (max-width: 480px) {
       .ei-title { font-size: 24px; }
@@ -847,9 +869,9 @@ Express Interest</span>
     // Initial render
     render(getConfig());
 
-    // --- Supabase Config (for interest forms) ---
-    const SUPABASE_URL = 'https://wiwlydjvpwvlosfojdbz.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_HdoH-muE7XTiA5_W6FMWUQ_VT4R_XDw';
+    // --- Supabase Config ---
+    const SUPABASE_URL = 'https://qlwfcfypnoptsocdpxuv.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFsd2ZjZnlwbm9wdHNvY2RweHV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcxODY2NzUsImV4cCI6MjA3Mjc2MjY3NX0.fZLwb_VC2o8Sn3kp5H0_eJmhC8Hu8VtSHa2fpuqGNbY';
 
     function toggleInterestForm(formId) {
       const form = document.getElementById(formId);
@@ -1037,9 +1059,19 @@ Express Interest</span>
       { name:"Compassionate Leader", description:"You are the compass in chaos — you make people feel seen, safe, and ready to rise.", image:"compassionate-leader.webp", superpower:"You hold the center when things shake. You make people feel seen, safe, and ready to rise." },
       { name:"Truth-Teller", description:"You are the sentence that slices through the noise — speaking sharp truth wrapped in unexpected tenderness.", image:"truth-teller.webp", superpower:"You cut through noise with precision. Your words land like arrows — sharp, clean, and deeply needed." }
     ];
-    const IMG_BASE = 'assets/archetypes/';
+    const PROTECTIVE_ARCHETYPES = [
+      { name:"Perfectionist", description:"It's safer for me to endlessly improve than finish and possibly fail", image:"perfectionist.webp", summary:"This archetype developed to protect you from criticism and failure." },
+      { name:"People Pleaser", description:"It's safer for me to stay agreeable than possibly upset others", image:"people-pleaser.webp", summary:"This archetype developed to protect you from rejection and conflict." },
+      { name:"Controller", description:"It's safer for me to manage everything to ensure the outcome is positive", image:"the-controller.webp", summary:"This archetype developed to protect you from chaos and unpredictability." },
+      { name:"Performer", description:"It's safer for me to do what's needed to be liked than leave it to chance", image:"the-performer.webp", summary:"This archetype developed to protect you from being unliked or rejected." },
+      { name:"Ghost", description:"It's safer for me to hide or withdraw than show up and possibly be hurt", image:"the-ghost.webp", summary:"This archetype developed to protect you from being hurt or disappointed." }
+    ];
 
-    let ePhase = 'intro'; // intro, swipe, battle, reveal
+    const IMG_BASE = 'assets/archetypes/';
+    const EDGE_FN_URL = SUPABASE_URL + '/functions/v1/send-archetype-profile';
+
+    let ePhase = 'intro'; // intro, swipe, battle, reveal, protective_intro
+    let eFlowType = 'essence'; // 'essence' or 'protective'
     let eIndex = 0;
     let eSwipedRight = [];
     let eSwipeHistory = [];
@@ -1049,9 +1081,17 @@ Express Interest</span>
     let eCurrentX = 0;
     let eAnimating = false;
     let eFinal = null;
+    let eEssenceFinal = null; // saved essence result for reference in protective flow
+    let eUserEmail = '';
+    let eUserName = '';
+    let eEmailState = null; // null, 'sending', 'sent', 'skipped'
+    let eConfettiHTML = null; // cached confetti to avoid re-rendering on state changes
+
+    function currentArchetypes() { return eFlowType === 'protective' ? PROTECTIVE_ARCHETYPES : ARCHETYPES; }
 
     // Preload all images
     ARCHETYPES.forEach(a => { const img = new Image(); img.src = IMG_BASE + a.image; });
+    PROTECTIVE_ARCHETYPES.forEach(a => { const img = new Image(); img.src = IMG_BASE + a.image; });
 
     function dismissOverlay() {
       const el = document.getElementById('essenceOverlay');
@@ -1069,9 +1109,25 @@ Express Interest</span>
       } catch(e){}
     })();
 
+    function makeConfetti() {
+      const colors = ['#ffdd27','#5e17eb','#7c3aed','#f59e0b','#10b981','#ec4899'];
+      let html = '';
+      for (let i = 0; i < 50; i++) {
+        const c = colors[Math.floor(Math.random()*colors.length)];
+        const left = (Math.random()*100).toFixed(1);
+        const size = (8+Math.random()*8).toFixed(0);
+        const dur = (2+Math.random()*2).toFixed(1);
+        const delay = (Math.random()*.5).toFixed(2);
+        const rot = (Math.random()*360).toFixed(0);
+        html += `<div class="confetti-piece" style="left:${left}%;width:${size}px;height:${size}px;background:${c};transform:rotate(${rot}deg);--dur:${dur}s;--delay:${delay}s"></div>`;
+      }
+      return html;
+    }
+
     function renderEssence() {
       const root = document.getElementById('essenceContent');
       if (!root) return;
+      const archs = currentArchetypes();
 
       if (ePhase === 'intro') {
         root.innerHTML = `
@@ -1090,15 +1146,16 @@ Express Interest</span>
       }
 
       if (ePhase === 'swipe') {
-        const a = ARCHETYPES[eIndex];
+        const a = archs[eIndex];
         if (!a) return;
-        const next = ARCHETYPES[eIndex + 1];
-        const pct = ((eIndex + 1) / ARCHETYPES.length * 100).toFixed(0);
+        const next = archs[eIndex + 1];
+        const pct = ((eIndex + 1) / archs.length * 100).toFixed(0);
         const isMobile = window.innerWidth <= 768;
+        const label = eFlowType === 'protective' ? 'Swipe right if this feels familiar' : (isMobile ? 'Swipe right if this sounds like you' : 'Click the buttons or swipe');
 
         root.innerHTML = `
           <div class="swipe-phase">
-            <div class="swipe-instruction">${isMobile ? 'Swipe right if this sounds like you' : 'Click the buttons or swipe'}</div>
+            <div class="swipe-instruction">${label}</div>
             ${isMobile && eIndex === 0 ? '<div class="swipe-hint"><span>Swipe</span><span class="swipe-hint-arrow">→</span></div>' : ''}
             <div class="swipe-card-area">
               ${next ? `<div class="swipe-card-next"><img class="swipe-card-img" src="${IMG_BASE}${next.image}" alt="${next.name}"><div class="swipe-card-body"><p class="swipe-card-desc">${next.description}</p></div></div>` : ''}
@@ -1109,10 +1166,10 @@ Express Interest</span>
                 <div class="swipe-card-body"><p class="swipe-card-desc">${a.description}</p></div>
               </div>
             </div>
-            <div class="swipe-progress">${eIndex+1} of ${ARCHETYPES.length} · ${eSwipedRight.length} resonate${eSwipedRight.length===1?'s':''}</div>
+            <div class="swipe-progress">${eIndex+1} of ${archs.length} · ${eSwipedRight.length} resonate${eSwipedRight.length===1?'s':''}</div>
             <div class="swipe-bar"><div class="swipe-bar-fill" style="width:${pct}%"></div></div>
             ${eSwipeHistory.length ? '<div style="text-align:center"><button class="swipe-undo" onclick="swipeUndo()">↶ Undo</button></div>' : ''}
-            ${!isMobile ? `<div class="swipe-actions"><button class="swipe-btn swipe-btn-no" onclick="animateSwipe('left')">❌ Not Me</button><button class="swipe-btn swipe-btn-yes" onclick="animateSwipe('right')">✅ Sounds Like Me</button></div>` : ''}
+            ${!isMobile ? `<div class="swipe-actions"><button class="swipe-btn swipe-btn-no" onclick="animateSwipe('left')">❌ Not Me</button><button class="swipe-btn swipe-btn-yes" onclick="animateSwipe('right')">✅ ${eFlowType==='protective'?'Feels Familiar':'Sounds Like Me'}</button></div>` : ''}
           </div>`;
         attachSwipeListeners();
         return;
@@ -1121,10 +1178,11 @@ Express Interest</span>
       if (ePhase === 'battle' && eSwipedRight.length >= 2) {
         const [a, b] = eSwipedRight;
         const isFinal = eSwipedRight.length === 2;
+        const battleQ = eFlowType === 'protective' ? 'Which pattern feels more familiar?' : 'Which resonates more?';
         root.innerHTML = `
           <div class="battle-phase">
-            <div class="battle-title">${isFinal ? '🏆 Final 2!' : 'Which resonates more?'}</div>
-            <div class="battle-sub">${isFinal ? 'Choose the one that feels most like you' : 'Narrow down from '+eSwipedRight.length+' options'}</div>
+            <div class="battle-title">${isFinal ? '🏆 Final 2!' : battleQ}</div>
+            <div class="battle-sub">${isFinal ? (eFlowType==='protective'?'Which one runs the show more?':'Choose the one that feels most like you') : 'Narrow down from '+eSwipedRight.length+' options'}</div>
             ${eBattleHistory.length ? '<div style="text-align:center"><button class="swipe-undo" onclick="battleUndo()">↶ Undo</button></div>' : ''}
             <div class="battle-card" onclick="selectBattle(0)">
               <img class="battle-card-img" src="${IMG_BASE}${a.image}" alt="${a.name}">
@@ -1140,40 +1198,91 @@ Express Interest</span>
       }
 
       if (ePhase === 'reveal' && eFinal) {
-        // Confetti
-        const colors = ['#ffdd27','#5e17eb','#7c3aed','#f59e0b','#10b981','#ec4899'];
-        let confetti = '';
-        for (let i = 0; i < 50; i++) {
-          const c = colors[Math.floor(Math.random()*colors.length)];
-          const left = (Math.random()*100).toFixed(1);
-          const size = (8+Math.random()*8).toFixed(0);
-          const dur = (2+Math.random()*2).toFixed(1);
-          const delay = (Math.random()*.5).toFixed(2);
-          const rot = (Math.random()*360).toFixed(0);
-          confetti += `<div class="confetti-piece" style="left:${left}%;width:${size}px;height:${size}px;background:${c};transform:rotate(${rot}deg);--dur:${dur}s;--delay:${delay}s"></div>`;
+        const isEssence = eFlowType === 'essence';
+
+        // Build email section for essence reveal
+        let bottomSection = '';
+        if (isEssence) {
+          if (eEmailState === 'sent') {
+            bottomSection = `
+              <div class="reveal-email-success">
+                <p>Profile sent! Check your inbox.</p>
+                <span>Now let's discover what's been blocking you...</span>
+              </div>`;
+          } else if (eEmailState === 'skipped') {
+            bottomSection = `
+              <a href="https://findmyflow.nichuzz.com/get-started" class="reveal-cta">Explore The Full Experience</a>
+              <button class="reveal-links-btn" onclick="dismissOverlay()">Go to links</button>`;
+          } else {
+            bottomSection = `
+              <div class="reveal-email-section">
+                <p class="reveal-email-prompt">Enter your email to receive your full ${eFinal.name} profile and discover what's been blocking your gifts</p>
+                <input class="reveal-email-input" type="text" id="revealName" placeholder="Your name (optional)" value="${esc(eUserName)}">
+                <input class="reveal-email-input" type="email" id="revealEmail" placeholder="Your email" value="${esc(eUserEmail)}" required>
+                <div id="revealEmailError"></div>
+                <button class="reveal-email-btn" id="revealEmailBtn" onclick="submitEmail()" ${eEmailState==='sending'?'disabled':''}>
+                  ${eEmailState==='sending' ? 'Sending...' : 'Send My Profile & Continue'}
+                </button>
+                <div style="text-align:center"><span class="reveal-email-skip" onclick="skipEmail()">Skip for now</span></div>
+              </div>`;
+          }
+        } else {
+          // Protective reveal — final CTAs
+          bottomSection = `
+            <a href="https://findmyflow.nichuzz.com/get-started" class="reveal-cta">Explore The Full Experience</a>
+            <button class="reveal-links-btn" onclick="dismissOverlay()">Go to links</button>`;
         }
+
         root.innerHTML = `
           <div class="reveal-phase">
-            ${confetti}
+            ${eConfettiHTML || ''}
             <img class="reveal-img" src="${IMG_BASE}${eFinal.image}" alt="${eFinal.name}">
-            <div class="reveal-badge">Your Essence</div>
-            <div class="reveal-name">${eFinal.name}</div>
-            <p class="reveal-superpower">${eFinal.superpower}</p>
-            <a href="https://findmyflow.nichuzz.com/get-started" class="reveal-cta">Explore The Full Experience</a>
-            <button class="reveal-links-btn" onclick="dismissOverlay()">Go to links</button>
+            <div class="reveal-badge">${isEssence ? 'Your Essence' : 'Your Protective Pattern'}</div>
+            <div class="reveal-name">${isEssence ? eFinal.name : 'The ' + eFinal.name}</div>
+            <p class="reveal-superpower">${isEssence ? eFinal.superpower : eFinal.summary}</p>
+            ${bottomSection}
+          </div>`;
+        return;
+      }
+
+      if (ePhase === 'protective_intro' && eEssenceFinal) {
+        root.innerHTML = `
+          <div class="protective-intro ei-inner">
+            <div class="ei-sparkle">🛡️</div>
+            <h1 class="ei-title">Identify What's Blocking You</h1>
+            <p class="ei-text">Now let's explore what's been <strong>muting your song</strong>...</p>
+            <p class="ei-text" style="text-align:left;font-weight:400;">Growing up, we all developed protective patterns to keep us safe. Over time, they became automatic — running in the background like invisible scripts.</p>
+            <ul class="pi-pattern-list">
+              <li><span class="pi-emoji">✨</span> Perfectionist — "I must get it perfect to be safe"</li>
+              <li><span class="pi-emoji">🤝</span> People Pleaser — "I must keep everyone happy"</li>
+              <li><span class="pi-emoji">🎮</span> Controller — "I must manage everything"</li>
+              <li><span class="pi-emoji">🎭</span> Performer — "I must earn my worth"</li>
+              <li><span class="pi-emoji">👻</span> Ghost — "I must stay hidden to stay safe"</li>
+            </ul>
+            <p class="ei-text">They once protected you. But they've now become the thing <strong>blocking you from sharing your ${eEssenceFinal.name} gifts</strong>...</p>
+            <p class="ei-hint">Swipe right on the patterns that feel familiar.</p>
+            <button class="ei-cta" onclick="startProtectiveFlow()">Let's Go</button>
           </div>`;
         return;
       }
     }
 
     function startSwipe() {
-      ePhase = 'swipe'; eIndex = 0; eSwipedRight = []; eSwipeHistory = [];
+      ePhase = 'swipe'; eIndex = 0; eSwipedRight = []; eSwipeHistory = []; eBattleHistory = [];
+      renderEssence();
+    }
+
+    function startProtectiveFlow() {
+      eFlowType = 'protective';
+      ePhase = 'swipe'; eIndex = 0; eSwipedRight = []; eSwipeHistory = []; eBattleHistory = [];
+      eFinal = null;
       renderEssence();
     }
 
     function doSwipeRight() {
+      const archs = currentArchetypes();
       eSwipeHistory.push({ index: eIndex, swiped: [...eSwipedRight] });
-      eSwipedRight.push(ARCHETYPES[eIndex]);
+      eSwipedRight.push(archs[eIndex]);
       eIndex++;
       checkSwipeEnd();
     }
@@ -1183,9 +1292,10 @@ Express Interest</span>
       checkSwipeEnd();
     }
     function checkSwipeEnd() {
-      if (eIndex >= ARCHETYPES.length) {
+      const archs = currentArchetypes();
+      if (eIndex >= archs.length) {
         if (eSwipedRight.length === 0) { eIndex = 0; eSwipedRight = []; eSwipeHistory = []; }
-        else if (eSwipedRight.length === 1) { eFinal = eSwipedRight[0]; ePhase = 'reveal'; }
+        else if (eSwipedRight.length === 1) { eFinal = eSwipedRight[0]; onFlowComplete(); }
         else { eBattleHistory = []; ePhase = 'battle'; }
       }
       renderEssence();
@@ -1279,12 +1389,122 @@ Express Interest</span>
       eBattleHistory.push([...eSwipedRight]);
       const loser = eSwipedRight[idx === 0 ? 1 : 0];
       eSwipedRight = eSwipedRight.filter(a => a !== loser);
-      if (eSwipedRight.length === 1) { eFinal = eSwipedRight[0]; ePhase = 'reveal'; }
+      if (eSwipedRight.length === 1) { eFinal = eSwipedRight[0]; onFlowComplete(); }
       renderEssence();
     }
     function battleUndo() {
       if (!eBattleHistory.length) return;
       eSwipedRight = eBattleHistory.pop();
+      renderEssence();
+    }
+
+    function onFlowComplete() {
+      ePhase = 'reveal';
+      eConfettiHTML = makeConfetti(); // generate once per reveal
+      if (eFlowType === 'essence') {
+        eEssenceFinal = eFinal;
+        eEmailState = null;
+        // Insert lead into Supabase (fire-and-forget)
+        // Will be updated with protective archetype later
+      } else {
+        // Protective flow complete
+        // Update archetype_leads row with protective_archetype (fire-and-forget)
+        if (eUserEmail) {
+          fetch(SUPABASE_URL + '/rest/v1/archetype_leads?email=eq.' + encodeURIComponent(eUserEmail), {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': SUPABASE_KEY,
+              'Authorization': 'Bearer ' + SUPABASE_KEY,
+              'Prefer': 'return=minimal'
+            },
+            body: JSON.stringify({ protective_archetype: eFinal.name })
+          }).catch(() => {});
+          // Send protective email (fire-and-forget — don't block UI)
+          fetch(EDGE_FN_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_KEY },
+            body: JSON.stringify({
+              email: eUserEmail,
+              name: eUserName,
+              archetype_name: eFinal.name,
+              type: 'protective'
+            })
+          }).catch(() => {});
+        }
+      }
+    }
+
+    async function submitEmail() {
+      const nameEl = document.getElementById('revealName');
+      const emailEl = document.getElementById('revealEmail');
+      const errEl = document.getElementById('revealEmailError');
+      if (!nameEl || !emailEl) return;
+
+      eUserName = nameEl.value.trim();
+      eUserEmail = emailEl.value.trim();
+
+      if (!eUserEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(eUserEmail)) {
+        if (errEl) errEl.innerHTML = '<div class="reveal-email-error">Please enter a valid email.</div>';
+        return;
+      }
+
+      eEmailState = 'sending';
+      renderEssence();
+
+      try {
+        // Insert lead into FindMyFlow Supabase
+        fetch(SUPABASE_URL + '/rest/v1/archetype_leads', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_KEY,
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({
+            email: eUserEmail,
+            name: eUserName || null,
+            essence_archetype: eFinal.name
+          })
+        }).catch(() => {});
+
+        // Send essence profile email (awaited)
+        const res = await fetch(EDGE_FN_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_KEY },
+          body: JSON.stringify({
+            email: eUserEmail,
+            name: eUserName,
+            archetype_name: eFinal.name,
+            type: 'essence'
+          })
+        });
+
+        if (!res.ok) throw new Error('Send failed');
+
+        eEmailState = 'sent';
+        renderEssence();
+
+        // After 2s, transition to protective intro
+        setTimeout(() => {
+          ePhase = 'protective_intro';
+          renderEssence();
+        }, 2000);
+      } catch (e) {
+        eEmailState = null;
+        renderEssence();
+        // DOM was just rebuilt by renderEssence — use setTimeout to ensure element exists
+        setTimeout(() => {
+          const errEl2 = document.getElementById('revealEmailError');
+          if (errEl2) errEl2.innerHTML = '<div class="reveal-email-error">Something went wrong. Please try again.</div>';
+        }, 0);
+      }
+    }
+
+    function skipEmail() {
+      eEmailState = 'skipped';
+      try { sessionStorage.setItem('essence_skipped','1'); } catch(e){}
       renderEssence();
     }
 
